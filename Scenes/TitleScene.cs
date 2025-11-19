@@ -43,15 +43,7 @@ public class TitleScene : Scene
         // 배경을 검은색으로
         TextureHelper.DrawRectangle(batch, graphicsDevice, new Rectangle(0, 0, 1280, 720), Color.Black);
         
-        if (font != null)
-        {
-            batch.DrawString(font, "Press ENTER to Start", new Vector2(450, 350), Color.White);
-        }
-        else
-        {
-            // 폰트가 없을 경우 흰색 사각형으로 표시
-            TextureHelper.DrawRectangle(batch, graphicsDevice, new Rectangle(450, 350, 400, 50), Color.White);
-        }
+        SimpleFont.DrawString(batch, graphicsDevice, font, "Press ENTER to Start", new Vector2(450, 350), Color.White);
         
         batch.End();
     }

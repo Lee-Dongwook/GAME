@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Content;
@@ -12,6 +13,14 @@ public class GameScene : Scene
     private Player player;
     private Map map;
     private Camera camera;
+    private List<Monster> monsters;
+    private Random random;
+    
+    // 스프라이트 텍스처
+    private Texture2D playerSprite;
+    private Texture2D monsterSprite;
+    private Texture2D grassTileSprite;
+    private Texture2D wallTileSprite;
 
     public GameScene(ContentManager content) : base(content) { }
 
@@ -30,8 +39,45 @@ public class GameScene : Scene
         map = new Map(50, 50);
         player = new Player(new Vector2(400, 300));
         
-        // 카메라 초기화 (나중에 GraphicsDevice 필요)
+        // 카메라 초기화
         camera = new Camera(1280, 720);
+        
+        // 몬스터 초기화
+        random = new Random();
+        monsters = new List<Monster>();
+        SpawnMonsters();
+        
+        // 스프라이트 생성 (GraphicsDevice가 필요하므로 Load에서 생성 불가, Draw에서 생성)
+    }
+    
+    private void InitializeSprites(GraphicsDevice device)
+    {
+        if (playerSprite == null)
+        {
+            playerSprite = SpriteGenerator.GeneratePlayerSprite(device, 32);
+            monsterSprite = SpriteGenerator.GenerateMonsterSprite(device, 24, Color.Red);
+            grassTileSprite = SpriteGenerator.GenerateTileSprite(device, map.TileSize, Color.Green, true);
+            wallTileSprite = SpriteGenerator.GenerateWallSprite(device, map.TileSize);
+        }
+    }
+    
+    private void SpawnMonsters()
+    {
+        // 맵에 몬스터 배치 (벽이 아닌 곳에만)
+        for (int i = 0; i < 10; i++)
+        {
+            int x = random.Next(2, map.Width - 2);
+            int y = random.Next(2, map.Height - 2);
+            Vector2 position = new Vector2(x * map.TileSize + map.TileSize / 2, y * map.TileSize + map.TileSize / 2);
+            
+            if (map.IsWalkable(position))
+            {
+                int level = random.Next(1, 5);
+                string[] monsterNames = { "슬라임", "고블린", "오크", "늑대" };
+                string name = monsterNames[random.Next(monsterNames.Length)];
+                monsters.Add(new Monster(name, level, position));
+            }
+        }
     }
 
     public override void Unload() { }
@@ -61,10 +107,41 @@ public class GameScene : Scene
         if (map.IsWalkable(newPosition))
         {
             player.Update(time, movement);
+            
+            // 몬스터와 충돌 체크
+            CheckMonsterCollision();
         }
         
         // 카메라가 플레이어를 따라감
         camera.Follow(player.Position);
+    }
+    
+    private void CheckMonsterCollision()
+    {
+        Rectangle playerBounds = new Rectangle(
+            (int)player.Position.X - 16,
+            (int)player.Position.Y - 16,
+            32,
+            32
+        );
+        
+        for (int i = monsters.Count - 1; i >= 0; i--)
+        {
+            var monster = monsters[i];
+            Rectangle monsterBounds = new Rectangle(
+                (int)monster.Position.X - 16,
+                (int)monster.Position.Y - 16,
+                32,
+                32
+            );
+            
+            if (playerBounds.Intersects(monsterBounds))
+            {
+                // 전투 씬으로 전환
+                SceneManager.ChangeScene(new BattleScene(Content, player, monster));
+                return;
+            }
+        }
     }
 
     public override void Draw(SpriteBatch batch, GraphicsDevice graphicsDevice)
@@ -72,6 +149,9 @@ public class GameScene : Scene
         // 간단한 테스트: 카메라 변환 없이 직접 화면 좌표로 그리기
         if (batch == null || graphicsDevice == null)
             return;
+        
+        // 스프라이트 초기화 (첫 번째 Draw 호출 시)
+        InitializeSprites(graphicsDevice);
             
         batch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend);
         
@@ -101,7 +181,16 @@ public class GameScene : Scene
                     map.TileSize
                 );
                 
-                TextureHelper.DrawRectangle(batch, graphicsDevice, destRect, color);
+                // 타일 타입에 따라 다른 스프라이트 사용
+                Texture2D tileSprite = (tile == Map.TILE_WALL) ? wallTileSprite : grassTileSprite;
+                if (tileSprite != null)
+                {
+                    batch.Draw(tileSprite, destRect, Color.White);
+                }
+                else
+                {
+                    TextureHelper.DrawRectangle(batch, graphicsDevice, destRect, color);
+                }
             }
         }
         
@@ -115,23 +204,50 @@ public class GameScene : Scene
             32,
             32
         );
-        TextureHelper.DrawRectangle(batch, graphicsDevice, playerRect, Color.Blue);
-        TextureHelper.DrawRectangleOutline(batch, graphicsDevice, playerRect, Color.DarkBlue, 2);
-        
-        // UI 그리기
-        if (font != null)
+        // 플레이어 스프라이트 그리기
+        if (playerSprite != null)
         {
-            batch.DrawString(font, $"Level: {player.Level}", new Vector2(10, 10), Color.White);
-            batch.DrawString(font, $"HP: {player.CurrentHP}/{player.MaxHP}", new Vector2(10, 40), Color.Red);
-            batch.DrawString(font, $"MP: {player.CurrentMP}/{player.MaxMP}", new Vector2(10, 70), Color.Blue);
-            batch.DrawString(font, $"EXP: {player.Experience}/{player.ExperienceToNextLevel}", new Vector2(10, 100), Color.Yellow);
+            batch.Draw(playerSprite, playerRect, Color.White);
         }
         else
         {
-            // 폰트가 없을 경우 색상으로 표시
-            DrawHealthBar(batch, graphicsDevice, new Rectangle(10, 10, 200, 20), player.CurrentHP, player.MaxHP, Color.Red);
-            DrawHealthBar(batch, graphicsDevice, new Rectangle(10, 35, 200, 20), player.CurrentMP, player.MaxMP, Color.Blue);
+            TextureHelper.DrawRectangle(batch, graphicsDevice, playerRect, Color.Blue);
+            TextureHelper.DrawRectangleOutline(batch, graphicsDevice, playerRect, Color.DarkBlue, 2);
         }
+        
+        // 몬스터 그리기
+        foreach (var monster in monsters)
+        {
+            int monsterScreenX = (int)((monster.Position.X / map.TileSize - offsetX) * map.TileSize);
+            int monsterScreenY = (int)((monster.Position.Y / map.TileSize - offsetY) * map.TileSize);
+            
+            var monsterRect = new Rectangle(
+                monsterScreenX - 12,
+                monsterScreenY - 12,
+                24,
+                24
+            );
+            
+            if (monsterSprite != null)
+            {
+                batch.Draw(monsterSprite, monsterRect, Color.White);
+            }
+            else
+            {
+                TextureHelper.DrawRectangle(batch, graphicsDevice, monsterRect, Color.Red);
+                TextureHelper.DrawRectangleOutline(batch, graphicsDevice, monsterRect, Color.DarkRed, 1);
+            }
+        }
+        
+        // UI 그리기
+        SimpleFont.DrawString(batch, graphicsDevice, font, $"Level: {player.Level}", new Vector2(10, 10), Color.White);
+        SimpleFont.DrawString(batch, graphicsDevice, font, $"HP: {player.CurrentHP}/{player.MaxHP}", new Vector2(10, 30), Color.Red);
+        SimpleFont.DrawString(batch, graphicsDevice, font, $"MP: {player.CurrentMP}/{player.MaxMP}", new Vector2(10, 50), Color.Blue);
+        SimpleFont.DrawString(batch, graphicsDevice, font, $"EXP: {player.Experience}/{player.ExperienceToNextLevel}", new Vector2(10, 70), Color.Yellow);
+        
+        // 체력/마나 바도 함께 표시
+        DrawHealthBar(batch, graphicsDevice, new Rectangle(10, 90, 200, 20), player.CurrentHP, player.MaxHP, Color.Red);
+        DrawHealthBar(batch, graphicsDevice, new Rectangle(10, 115, 200, 20), player.CurrentMP, player.MaxMP, Color.Blue);
         
         batch.End();
     }
