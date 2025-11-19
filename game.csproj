@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="MonoGame.Extended" Version="2.0.0" />
     <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.1.303" />
   </ItemGroup>
 
@@ -17,9 +18,7 @@
   </ItemGroup>
 
   <Target Name="BuildContent" BeforeTargets="Build">
-    <Exec Command="dotnet tool run mgcb Content/Content.mgcb /build /platform:DesktopGL /outputDir:$(OutputPath)Content" 
-          ContinueOnError="true" 
-          IgnoreExitCode="true" />
+    <Exec Command="dotnet tool run mgcb Content/Content.mgcb /build /platform:DesktopGL /outputDir:$(OutputPath)Content" ContinueOnError="true" IgnoreExitCode="true" />
   </Target>
   
   <Target Name="CopyContent" AfterTargets="Build">

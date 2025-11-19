@@ -24,3 +24,5 @@
 /Users/dlehddnr0713/Desktop/game/bin/Debug/net6.0/runtimes/win-x86/native/soft_oal.dll
 /Users/dlehddnr0713/Desktop/game/obj/Debug/net6.0/game.csproj.Up2Date
 /Users/dlehddnr0713/Desktop/game/obj/Debug/net6.0/game.genruntimeconfig.cache
+/Users/dlehddnr0713/Desktop/game/bin/Debug/net6.0/MonoGame.Extended.dll
+/Users/dlehddnr0713/Desktop/game/bin/Debug/net6.0/Newtonsoft.Json.dll

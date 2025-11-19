@@ -10,7 +10,15 @@ public class GameScene : Scene
 
     public override void Load()
     {
-        font = Content.Load<SpriteFont>("DefaultFont");
+        try
+        {
+            font = Content.Load<SpriteFont>("DefaultFont");
+        }
+        catch
+        {
+            // Content Pipeline이 없을 경우 null로 설정
+            font = null;
+        }
     }
 
     public override void Unload() { }
@@ -22,6 +30,9 @@ public class GameScene : Scene
 
     public override void Draw(SpriteBatch batch)
     {
-        batch.DrawString(font, "Game Scene (In Development)", new Vector2(50, 50), Color.White);
+        if (font != null)
+        {
+            batch.DrawString(font, "Game Scene (In Development)", new Vector2(50, 50), Color.White);
+        }
     }
 }

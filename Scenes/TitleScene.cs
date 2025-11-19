@@ -11,7 +11,15 @@ public class TitleScene : Scene
 
     public override void Load()
     {
-        font = Content.Load<SpriteFont>("DefaultFont");
+        try
+        {
+            font = Content.Load<SpriteFont>("DefaultFont");
+        }
+        catch
+        {
+            // Content Pipeline이 없을 경우 null로 설정 (텍스트 없이 실행)
+            font = null;
+        }
     }
 
     public override void Unload() { }
@@ -26,6 +34,10 @@ public class TitleScene : Scene
 
     public override void Draw(SpriteBatch batch)
     {
-        batch.DrawString(font, "Press ENTER to Start", new Vector2(450, 350), Color.White);
+        if (font != null)
+        {
+            batch.DrawString(font, "Press ENTER to Start", new Vector2(450, 350), Color.White);
+        }
+        // 폰트가 없을 경우 텍스트 없이 실행 (게임은 작동함)
     }
 }
