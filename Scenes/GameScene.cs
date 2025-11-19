@@ -70,10 +70,10 @@ public class GameScene : Scene
     public override void Draw(SpriteBatch batch, GraphicsDevice graphicsDevice)
     {
         // 간단한 테스트: 카메라 변환 없이 직접 화면 좌표로 그리기
-        batch.Begin();
-        
-        // 디버깅: 전체 화면을 빨간색으로 채워서 렌더링이 작동하는지 확인
-        TextureHelper.DrawRectangle(batch, graphicsDevice, new Rectangle(0, 0, 1280, 720), Color.DarkGreen);
+        if (batch == null || graphicsDevice == null)
+            return;
+            
+        batch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend);
         
         // 맵 그리기 (간단하게 화면에 맞춰서)
         int tilesToShowX = 1280 / map.TileSize;

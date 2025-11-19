@@ -2,6 +2,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Input;
+using RpgGame.Systems;
 
 public class TitleScene : Scene
 {
@@ -34,13 +35,23 @@ public class TitleScene : Scene
 
     public override void Draw(SpriteBatch batch, GraphicsDevice graphicsDevice)
     {
-        batch.Begin();
+        if (batch == null || graphicsDevice == null)
+            return;
+            
+        batch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend);
+        
+        // 배경을 검은색으로
+        TextureHelper.DrawRectangle(batch, graphicsDevice, new Rectangle(0, 0, 1280, 720), Color.Black);
         
         if (font != null)
         {
             batch.DrawString(font, "Press ENTER to Start", new Vector2(450, 350), Color.White);
         }
-        // 폰트가 없을 경우 텍스트 없이 실행 (게임은 작동함)
+        else
+        {
+            // 폰트가 없을 경우 흰색 사각형으로 표시
+            TextureHelper.DrawRectangle(batch, graphicsDevice, new Rectangle(450, 350, 400, 50), Color.White);
+        }
         
         batch.End();
     }
