@@ -14,5 +14,5 @@ public abstract class Scene
     public abstract void Load();
     public abstract void Unload();
     public abstract void Update(GameTime time);
-    public abstract void Draw(SpriteBatch batch);
+    public abstract void Draw(SpriteBatch batch, GraphicsDevice graphicsDevice);
 }

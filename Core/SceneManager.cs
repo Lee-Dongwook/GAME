@@ -19,8 +19,8 @@ public static class SceneManager
         _current?.Update(time);
     }
     
-    public static void Draw(SpriteBatch batch)
+    public static void Draw(SpriteBatch batch, GraphicsDevice graphicsDevice)
     {
-        _current?.Draw(batch);
+        _current?.Draw(batch, graphicsDevice);
     }
 }

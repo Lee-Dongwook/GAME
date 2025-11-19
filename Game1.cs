@@ -48,9 +48,7 @@ namespace RpgGame
         {
             GraphicsDevice.Clear(Color.Black);
 
-            _spriteBatch.Begin();
-            SceneManager.Draw(_spriteBatch);
-            _spriteBatch.End();
+            SceneManager.Draw(_spriteBatch, GraphicsDevice);
 
             base.Draw(gameTime);
         }

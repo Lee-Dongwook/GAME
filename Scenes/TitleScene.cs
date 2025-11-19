@@ -32,12 +32,16 @@ public class TitleScene : Scene
         }
     }
 
-    public override void Draw(SpriteBatch batch)
+    public override void Draw(SpriteBatch batch, GraphicsDevice graphicsDevice)
     {
+        batch.Begin();
+        
         if (font != null)
         {
             batch.DrawString(font, "Press ENTER to Start", new Vector2(450, 350), Color.White);
         }
         // 폰트가 없을 경우 텍스트 없이 실행 (게임은 작동함)
+        
+        batch.End();
     }
 }
